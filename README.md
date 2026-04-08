@@ -1,4 +1,4 @@
-# ES-PI1-2026-T2-G10
+# ES-PI1-2026-T101-G10
 Este projeto consiste no desenvolvimento do backend de um sistema de votação
 digital fictício, concebido com finalidade estritamente didática. Seu principal objetivo
 é promover a integração prática de conhecimentos das áreas de Lógica de
