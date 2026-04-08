@@ -19,7 +19,7 @@ Ramiro Alexander Sempertegui Rodas
 # Tecnologias Utilizadas
 Linguagem de Programação: Python 3.x.
 
-	Bibliotecas Utilizadas: mysql.connector; datetime; random; time e os;
+Bibliotecas Utilizadas: mysql.connector; datetime; random; time e os;
   
 Banco de Dados: MySQL
 
