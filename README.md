@@ -17,5 +17,17 @@ Matthius Schultheis Matulis
 Ramiro Alexander Sempertegui Rodas
 
 # Tecnologias Utilizadas
+Linguagem de Programação: Python 3.x.
+
+	Bibliotecas Utilizadas: mysql.connector; datetime; random; time e os;
+  
+Banco de Dados: MySQL
+
+Gestão do Projeto: Git e GitHub
+
+Criptografia e Matemática: Implementação do método Cifra de Hill para proteger o CPF, a chave de acesso e o protocolo de votação. Validação de algoritmos matemáticos para a validação de dígitos verificadores de CPF e Título de Eleitor.
+
+Auditoria: Logs de Ocorrência, geração de arquivo de texto externo (.txt)
+
 
 # Instruções
