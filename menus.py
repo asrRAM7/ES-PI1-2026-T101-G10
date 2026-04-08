@@ -1,87 +1,126 @@
 import os
 
 def main_menu():
-    os.system('cls')
-    print("\n=== Módulos do Sistema de Votação ===")
-    print("1 - Módulo de Gerenciamento\n2 - Módulo de Votação\n3 - Encerrar Sistema")
-    opcao = int(input("Informe a opção escolhida: "))
-    match opcao:
-        case 1:
-            menu_gerenciamento()
-        case 2:
-            menu_votacao()
-        case 3:
-            print("Encerrando sistema...")
-        case _:
-            print("Opção inválida.")
-    return opcao
+    opcao = 0
+    while opcao != 3:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("\n=== Módulos do Sistema de Votação ===")
+        print("1 - Módulo de Gerenciamento\n2 - Módulo de Votação\n3 - Encerrar Sistema")
+        try:
+            opcao = int(input("Informe a opção escolhida: "))
+        except ValueError:
+            print("Opção inválida. Por favor, informe um número.")
+            input("Pressione ENTER para tentar novamente...")
+            continue
+        match opcao:
+            case 1:
+                menu_gerenciamento()
+            case 2:
+                menu_votacao()
+            case 3:
+                print("Encerrando sistema...")
+            case _:
+                print("Opção inválida.")
 
 def menu_gerenciamento():
-    os.system('cls')
-    print("\n=== Menu do Módulo de Gerenciamento ===")
-    print("1 - Cadastrar Novo Eleitor\n2 - Cadastrar Novo Candidato\n3 - Retornar")
-    opcao = int(input("Informe a opção escolhida: "))
-    match opcao:
-        case 1:
-            print("\n=== Cadastramento de Eleitor ===")
-        case 2:
-            print("\n=== Cadastramento de Candidato ===")
-        case 3:
-            print("Retornando ao menu principal...")
-            main_menu()
-        case _:
-            print("Opção inválida.")
+    opcao = 0
+    while opcao != 3:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("\n=== Menu do Módulo de Gerenciamento ===")
+        print("1 - Cadastrar Novo Eleitor\n2 - Cadastrar Novo Candidato\n3 - Retornar")
+        try:
+            opcao = int(input("Informe a opção escolhida: "))
+        except ValueError:
+            print("Opção inválida. Por favor, informe um número.")
+            input("Pressione ENTER para tentar novamente...")
+            continue
+        match opcao:
+            case 1:
+                print("\n=== Cadastramento de Eleitor ===")
+                input("\nPressione ENTER para continuar...")
+            case 2:
+                print("\n=== Cadastramento de Candidato ===")
+                input("\nPressione ENTER para continuar...")
+            case 3:
+                print("Retornando ao menu principal...")
+            case _:
+                print("Opção inválida.")
 
 def menu_votacao():
-    os.system('cls')
-    print("\n=== Menu do Módulo de Votação ===")
-    print("1 - Abrir Sistema de Votação\n2 - Auditoria do Sistema de Votação\n3 - Resultado da Votação\n4 - Retornar")
-    opcao = int(input("Informe a opção escolhida: "))
-    match opcao:
-        case 1:
-            print("\n=== Sistema de Votação ===")
-        case 2:
-            menu_auditoria()
-        case 3:
-            menu_resultados()
-        case 4:
-            print("Retornando ao menu principal...")
-            main_menu()
-        case _:
-            print("Opção inválida.")
+    opcao = 0
+    while opcao != 4:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("\n=== Menu do Módulo de Votação ===")
+        print("1 - Abrir Sistema de Votação\n2 - Auditoria do Sistema de Votação\n3 - Resultado da Votação\n4 - Retornar")
+        try:
+            opcao = int(input("Informe a opção escolhida: "))
+        except ValueError:
+            print("Opção inválida. Por favor, informe um número.")
+            input("Pressione ENTER para tentar novamente...")
+            continue
+        match opcao:
+            case 1:
+                print("\n=== Sistema de Votação ===")
+                input("\nPressione ENTER para continuar...")
+            case 2:
+                menu_auditoria()
+            case 3:
+                menu_resultados()
+            case 4:
+                print("Retornando ao menu principal...")
+            case _:
+                print("Opção inválida.")
 
 def menu_resultados():
-    os.system('cls')
-    print("\n=== Resultados da Votação ===")
-    print("1 - Boletim de Urna\n2 - Estatística de Comparecimento\n3 - Votos por Partido\n4 - Validação da Integridade\n5 - Retornar")
-    opcao = int(input("Informe a opção escolhida: "))
-    match opcao:
-        case 1:
-            print("\n=== Boletim de Urna ===")
-        case 2:
-            print("\n=== Estatística de Comparecimento ===")
-        case 3:
-            print("\n=== Votos por Partido ===")
-        case 4:
-            print("\n=== Validação da Integridade ===")
-        case 5:
-            print("Retornando...")
-            menu_votacao()
-        case _:
-            print("Opção inválida.")
+    opcao = 0
+    while opcao != 5:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("\n=== Resultados da Votação ===")
+        print("1 - Boletim de Urna\n2 - Estatística de Comparecimento\n3 - Votos por Partido\n4 - Validação da Integridade\n5 - Retornar")
+        try:
+            opcao = int(input("Informe a opção escolhida: "))
+        except ValueError:
+            print("Opção inválida. Por favor, informe um número.")
+            input("Pressione ENTER para tentar novamente...")
+            continue
+        match opcao:
+            case 1:
+                print("\n=== Boletim de Urna ===")
+                input("\nPressione ENTER para continuar...")
+            case 2:
+                print("\n=== Estatística de Comparecimento ===")
+                input("\nPressione ENTER para continuar...")
+            case 3:
+                print("\n=== Votos por Partido ===")
+                input("\nPressione ENTER para continuar...")
+            case 4:
+                print("\n=== Validação da Integridade ===")
+                input("\nPressione ENTER para continuar...")
+            case 5:
+                print("Retornando...")
+            case _:
+                print("Opção inválida.")
 
 def menu_auditoria():
-    os.system('cls')
-    print("\n=== Auditoria do Sistema de Votação ===")
-    print("1 - Exibir Protocolos de Votação\n2 - Exibir Logs de Ocorrências\n3 - Retornar")
-    opcao = int(input("Informe a opção escolhida: "))
-    match opcao:
-        case 1:
-            print("\n=== Protocolos de Votação ===")
-        case 2:
-            print("\n=== Logs de Ocorrências ===")
-        case 3:
-            print("Retornando...")
-            menu_votacao()
-        case _:
-            print("Opção Inválida.")
+    opcao = 0
+    while opcao != 3:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("\n=== Auditoria do Sistema de Votação ===")
+        print("1 - Exibir Protocolos de Votação\n2 - Exibir Logs de Ocorrências\n3 - Retornar")
+        try:
+            opcao = int(input("Informe a opção escolhida: "))
+        except ValueError:
+            print("Opção inválida. Por favor, informe um número.")
+            input("Pressione ENTER para tentar novamente...")
+            continue
+        match opcao:
+            case 1:
+                print("\n=== Protocolos de Votação ===")
+                input("\nPressione ENTER para continuar...")
+            case 2:
+                print("\n=== Logs de Ocorrências ===")
+                input("\nPressione ENTER para continuar...")
+            case 3:
+                print("Retornando...")
+            case _:
+                print("Opção Inválida.")
