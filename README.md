@@ -6,10 +6,14 @@ Programação em Python, Manipulação de Bancos de Dados com SQL e aplicação 
 conceitos matemáticos (como Álgebra Linear) voltados à proteção da informação.
 
 # Grupo 10 2026
-Gabriel Hernandes Batista \n
-Gabriel Lara Jurgensen \n
-João Pedro Carlin \n
-Matthius Schultheis Matulis \n
+Gabriel Hernandes Batista
+
+Gabriel Lara Jurgensen
+
+João Pedro Carlin
+
+Matthius Schultheis Matulis
+
 Ramiro Alexander Sempertegui Rodas
 
 # Tecnologias Utilizadas
