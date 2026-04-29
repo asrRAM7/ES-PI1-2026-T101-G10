@@ -5,7 +5,7 @@ import random
 conexao = mysql.connector.connect(
     host='localhost',
     user='root',
-    password='o1B4T2t11579*',
+    password='SENHA',
     database='eleicao_db',
     port=3306
 )
