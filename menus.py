@@ -19,7 +19,6 @@ def main_menu():
             case 2:
                 menu_votacao()
             case 3:
-                conexão_db.fechar_conexao()
                 print("Encerrando sistema...")
             case _:
                 print("Opção inválida.")
@@ -38,7 +37,7 @@ def menu_gerenciamento():
             continue
         match opcao:
             case 1:
-                # ****** FAZER VALIDAÇÃO PARA NÃO PODER COLOCAR O MESMO CPF ***********
+                # ****** FAZER VALIDAÇÃO PARA NÃO PODER COLOCAR O MESMO CPF, ACHO QUE DA PRA FAZER ISSO NA FUNÇÃO INSERIR_ELEITOR***********
                 print("\n=== Cadastramento de Eleitor ===")
                 nome = input("Nome Completo: ")
                 titulo = input("Título de Eleitor: ")
