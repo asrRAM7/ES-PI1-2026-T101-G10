@@ -1,4 +1,5 @@
 import os
+import conexão_db
 
 def main_menu():
     opcao = 0
@@ -24,10 +25,10 @@ def main_menu():
 
 def menu_gerenciamento():
     opcao = 0
-    while opcao != 3:
+    while opcao != 4:
         os.system('cls' if os.name == 'nt' else 'clear')
         print("\n=== Menu do Módulo de Gerenciamento ===")
-        print("1 - Cadastrar Novo Eleitor\n2 - Cadastrar Novo Candidato\n3 - Retornar")
+        print("1 - Cadastrar Novo Eleitor\n2 - Cadastrar Novo Candidato\n3 - Buscas Eleitor\n4 - Retornar")
         try:
             opcao = int(input("Informe a opção escolhida: "))
         except ValueError:
@@ -37,11 +38,21 @@ def menu_gerenciamento():
         match opcao:
             case 1:
                 print("\n=== Cadastramento de Eleitor ===")
+                nome = input("Nome Completo: ")
+                titulo = input("Título de Eleitor: ")
+                cpf = input("CPF: ")
+                mesario = int(input("É mesário? (1-Sim / 0-Não): "))
+                conexão_db.inserir_eleitor(nome, titulo, cpf, mesario)
                 input("\nPressione ENTER para continuar...")
             case 2:
                 print("\n=== Cadastramento de Candidato ===")
                 input("\nPressione ENTER para continuar...")
             case 3:
+                print("\n=== Busca de Eleitor ===")
+                entrada = input("Digite o CPF ou Título: ")
+                conexão_db.busca_eleitor(entrada)
+                input("\nPressione ENTER para continuar...")
+            case 4:
                 print("Retornando ao menu principal...")
             case _:
                 print("Opção inválida.")
