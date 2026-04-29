@@ -1,19 +1,17 @@
 import mysql.connector
 import random
 
-# Conexão com o banco
+# Conexão com o banco ***** ESTÁ NO MEU BD EDUCACIONAL - RAMIRO ********
 conexao = mysql.connector.connect(
-    host='localhost',
-    user='root',
-    password='SENHA',
-    database='eleicao_db',
-    port=3306
+    host='BD-ACD',
+    user='BD120226732',
+    password='Fwyjy4',
+    database='BD120226732',
 )
 cursor = conexao.cursor()
 
-
 # ---------- Inserir um novo usuário ----------
-def inserir_eleitor(nome_eleitor, titulo_eleitor, cpf, mesario):
+def inserir_eleitor(nome_eleitor, titulo_eleitor, cpf, mesario, chave_acesso):
 # Verificação CPF
     resultado_cpf = validar_cpf(cpf)
     if resultado_cpf == 0:
@@ -24,7 +22,7 @@ def inserir_eleitor(nome_eleitor, titulo_eleitor, cpf, mesario):
     if resultado_titulo == 0:
         print("Erro: Título errado!")
         return
-# Passou nas duas verificações -
+# Passou nas duas verificações:
     chave_acesso = gerar_chave(nome_eleitor)
     try:
         if not conexao.is_connected():
@@ -118,6 +116,4 @@ def busca_eleitor(entrada):
     else:
         print("\nEleitor não localizado")
 
-# Fechar conexão
-cursor.close()
-conexao.close()
+# Fechar conexão **** FAZER FUNÇÃO PARA FECHAR CONEXÃO *****
