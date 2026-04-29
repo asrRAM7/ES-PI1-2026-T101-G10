@@ -1,7 +1,7 @@
 import mysql.connector
 import random
 
-# Conexão com o banco ***** ESTÁ NO MEU BD EDUCACIONAL - RAMIRO ********
+# Conexão com o banco
 conexao = mysql.connector.connect(
     host='BD-ACD',
     user='BD120226732',
@@ -77,7 +77,7 @@ def validar_cpf(cpf):
     else:
         return 0
         
-# ---------- Validação do Título ----------
+# ---------- Validação do Título ---------- ******* VALIDAR CORRETAMENTE *********
 def validar_titulo(titulo):
     if len(titulo) == 12:
         return 1
@@ -86,6 +86,7 @@ def validar_titulo(titulo):
     
 # ---------- Gerar Chave ----------
 def gerar_chave(nome):
+    parte_do_nome = nome[0] + nome[1] + nome[2]
     partes_nome = nome.split()
     if len (partes_nome) >= 2:
         primeiro_nome = partes_nome[0]
@@ -122,7 +123,7 @@ def busca_eleitor(entrada):
     else:
         print("\nEleitor não localizado")
 
-# Fechar conexão **** FAZER FUNÇÃO PARA FECHAR CONEXÃO *****
+# Fechar conexão
 def fechar_conexao():
     cursor.close()
     conexao.close()
