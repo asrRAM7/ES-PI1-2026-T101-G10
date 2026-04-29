@@ -86,7 +86,13 @@ def validar_titulo(titulo):
     
 # ---------- Gerar Chave ----------
 def gerar_chave(nome):
-    parte_do_nome = nome[0] + nome[1] + nome[2]
+    partes_nome = nome.split()
+    if len (partes_nome) >= 2:
+        primeiro_nome = partes_nome[0]
+        segundo_nome = partes_nome[1]
+        parte_do_nome = primeiro_nome[:2] + segundo_nome[0]
+    else:
+        parte_do_nome = nome[:3]
     numero_aleatorio = random.randint(1000, 9999)
     chave = str(parte_do_nome).upper() + str(numero_aleatorio)
     return chave
