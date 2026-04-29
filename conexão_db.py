@@ -117,3 +117,6 @@ def busca_eleitor(entrada):
         print("\nEleitor não localizado")
 
 # Fechar conexão **** FAZER FUNÇÃO PARA FECHAR CONEXÃO *****
+def fechar_conexao():
+    cursor.close()
+    conexao.close()
