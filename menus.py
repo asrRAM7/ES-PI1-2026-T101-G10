@@ -37,12 +37,14 @@ def menu_gerenciamento():
             continue
         match opcao:
             case 1:
+                # ****** FAZER VALIDAÇÃO PARA NÃO PODER COLOCAR O MESMO CPF ***********
                 print("\n=== Cadastramento de Eleitor ===")
                 nome = input("Nome Completo: ")
                 titulo = input("Título de Eleitor: ")
                 cpf = input("CPF: ")
                 mesario = int(input("É mesário? (1-Sim / 0-Não): "))
-                conexão_db.inserir_eleitor(nome, titulo, cpf, mesario)
+                chave_acesso=0
+                conexão_db.inserir_eleitor(nome, titulo, cpf, mesario, chave_acesso)
                 input("\nPressione ENTER para continuar...")
             case 2:
                 print("\n=== Cadastramento de Candidato ===")
