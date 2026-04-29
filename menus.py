@@ -19,6 +19,7 @@ def main_menu():
             case 2:
                 menu_votacao()
             case 3:
+                conexão_db.fechar_conexao()
                 print("Encerrando sistema...")
             case _:
                 print("Opção inválida.")
