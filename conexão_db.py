@@ -1,41 +1,48 @@
 import mysql.connector
 import random
+import criptografia
 
 # Conexão com o banco
 conexao = mysql.connector.connect(
     host='BD-ACD',
-    user='BD120226732',
-    password='Fwyjy4',
-    database='BD120226732',
+    user='',
+    password='',
+    database='',
 )
 cursor = conexao.cursor()
 
 # ---------- Inserir um novo usuário ----------
 def inserir_eleitor(nome_eleitor, titulo_eleitor, cpf, mesario, chave_acesso):
-# Verificação CPF
-    resultado_cpf = validar_cpf(cpf)
-    if resultado_cpf == 0:
-        print("Erro: Esse CPF não existe!")
+# Verificação CPF e Título
+    if validar_cpf(cpf) == 0:
+        print("Erro: CPF inválido!")
         return
-# Verificação título
-    resultado_titulo = validar_titulo(titulo_eleitor)
-    if resultado_titulo == 0:
-        print("Erro: Título errado!")
+
+    if validar_titulo(titulo_eleitor) == 0:
+        print("Erro: Título de Eleitor inválido!")
         return
+
 # Passou nas duas verificações:
     chave_acesso = gerar_chave(nome_eleitor)
+# Criptografar os dados antes de inserir no banco de dados
+    chave_criptografada = criptografia.criptografar(chave_acesso)
+    cpf_criptografado = criptografia.criptografar(cpf)
+    titulo_criptografado = criptografia.criptografar(titulo_eleitor)
     try:
         if not conexao.is_connected():
             conexao.reconnect(attempts=3, delay=1)
         sql = "INSERT INTO eleitores (nome_eleitor, titulo_eleitor, cpf, mesario, chave_acesso) VALUES (%s, %s, %s, %s, %s)"
-        valores = (nome_eleitor, titulo_eleitor, cpf, mesario, chave_acesso)
+        valores = (nome_eleitor, titulo_criptografado, cpf_criptografado, mesario, chave_criptografada)
         cursor.execute(sql, valores)
         conexao.commit()
         print(f"Eleitor inserido com Sucesso!")
-        print(f"Chave de Acesso Gerada: {chave_acesso}")
+        print(f"Chave de Acesso Gerada (Anote ela para não perder): {chave_acesso}")
     except mysql.connector.Error as erro:
-        print(f"Erro ao inserir no banco: {erro}")
-        conexao.rollback()
+        if erro.errno == 1062:
+            print(f"\n[ERRO] Já existe um eleitor cadastrado com este CPF ou Título de Eleitor!")
+        else:
+            print(f"Erro ao inserir no banco: {erro}")
+            conexao.rollback()
 
 def inserir_candidato(nome_candidato, numero_votacao, partido):
     sql = "INSERT INTO candidatos (nome_candidato, numero_votacao, partido) VALUES (%s, %s, %s)"
@@ -79,13 +86,44 @@ def validar_cpf(cpf):
         
 # ---------- Validação do Título ---------- ******* VALIDAR CORRETAMENTE *********
 def validar_titulo(titulo):
-    if len(titulo) == 12:
-        return 1
+    sequencial = titulo[:8]
+    uf = titulo[8:10]
+    digito_verificador = titulo[10:] #dv
+    soma = 0
+    peso = [2, 3, 4, 5, 6, 7, 8, 9]
+
+    # Cálculo do dígito verificador 1
+    for i in range(8):
+        soma += int(sequencial[i]) * peso[i]
+    resto = soma % 11
+
+    if resto == 10:
+        dv1 = 0
+    elif resto == 0 and uf in ['01', '02']:
+        dv1 = 1
     else:
-        return 0
+        dv1 = resto
+
+    # Cálculo do dígito verificador 2
+    soma2 = (int(uf[0])*7)+(int(uf[1])*8)+(dv1*9)
+    resto2 = soma2 % 11
+
+    if resto2 == 10:
+        dv2 = 0
+    elif resto2 == 0 and uf in ['01', '02']:
+        dv2 = 1
+    else:
+        dv2 = resto2
+
+    dv_results = f"{dv1}{dv2}"
+    if dv_results == digito_verificador:
+        return 1 # título valido
+    else:
+        return 0 # título inválido
     
 # ---------- Gerar Chave ----------
 def gerar_chave(nome):
+    nome = limpar_entrada(nome)
     parte_do_nome = nome[0] + nome[1] + nome[2]
     partes_nome = nome.split()
     if len (partes_nome) >= 2:
@@ -97,6 +135,18 @@ def gerar_chave(nome):
     numero_aleatorio = random.randint(1000, 9999)
     chave = str(parte_do_nome).upper() + str(numero_aleatorio)
     return chave
+
+# Funcão para limpar acentos de uma entrada
+def limpar_entrada(entrada):
+    entrada = entrada.upper()
+
+    com_acento = "ÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ"
+    sem_acento = "AAAAEEEIIIOOOOUUUC"
+    
+    for i in range(len(com_acento)):
+        entrada = entrada.replace(com_acento[i], sem_acento[i])
+    
+    return entrada
 
 # ---------- Buscar todos os usuários ----------
 def listar_eleitores():
@@ -110,16 +160,18 @@ def listar_candidatos():
         print(f"ID: {id_candidato}, Nome: {nome_candidato}, Número de Votação: {numero_votacao}, Partido: {partido}")
 
 # ---------- Busca específica de eleitor ----------
-
 def busca_eleitor(entrada):
+    # Criptografia para buscar no banco de dados
+    entrada = criptografia.criptografar(entrada)
     comando = "SELECT nome_eleitor, cpf, chave_acesso FROM eleitores WHERE cpf = %s OR titulo_eleitor = %s"
     cursor.execute(comando, (entrada, entrada))
     resultado = cursor.fetchone()
     if resultado:
         print(f"\nResultado encontrado:")
         print(f"Nome: {resultado[0]}")
-        print(f"CPF: {resultado[1]}")
-        print(f"Chave de Acesso: {resultado[2]}")
+        # Descriptografia para mostrar os dados
+        print(f"CPF: {criptografia.descriptografar(resultado[1],11)}")
+        print(f"Chave de Acesso: {criptografia.descriptografar(resultado[2],7)}")
     else:
         print("\nEleitor não localizado")
 
