@@ -4,10 +4,11 @@ import criptografia
 import time
 import random
 from datetime import datetime
+import auditoria
 
 cursor = conexao_db.conexao.cursor()
 
-def validar_dados_eleitor(mesario):
+def validar_dados_eleitor(mesario, encerrar):
     os.system('cls' if os.name == 'nt' else 'clear')
     print("=== Abertura de Votação ===")
 
@@ -32,32 +33,50 @@ def validar_dados_eleitor(mesario):
     if cpf_descriptografado != cpf_4_digitos:
         print("\nCPF incorreto!")
         input("\nPressione ENTER para continuar...")
+        auditoria.registrar_log("ALERTA: Tentativa de acesso negado")
         return False
 
 # Validação da chave de acesso    
     if chave_descriptogafada != chave_acesso:
         print("\nChave de acesso incorreta!")
         input("\nPressione ENTER para continuar...")
+        auditoria.registrar_log("ALERTA: Tentativa de acesso negado")
         return False
 
     if mesario:
         if resultado[3] == 1:
             print(f"\n{resultado[0]} é mesário")
         else:
-            print(f"\n{resultado[0]} não é mesário, portanto, não pode iniciar o sistema.")
+            print(f"\n{resultado[0]} não é mesário, portanto, não pode iniciar/encerrar o sistema.")
             input("\nPressione ENTER para voltar...")
+            auditoria.registrar_log("ALERTA: Tentativa de acesso negado")
             return False
     
     print(f"\nIdentidade confirmada! Bem-vindo(a), {resultado[0]}!")
-    if mesario:
+    if mesario and not encerrar:
         zerezima()
     if not mesario:
         if resultado[4] != None:
             print("\nVocê já votou! Não é possível votar novamente.")
             input("\nPressione ENTER para continuar...")
+            auditoria.registrar_log("ALERTA: Tentativa de voto duplo")
             return False
         else:
             votar(id_eleitor)
+    elif mesario and encerrar:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("=== Encerramento da Votação ===\n   Você realmente deseja encerrar a votação?\n   [1] Sim\n   [2] Não")
+        opcao = int(input("\n Escolha a opção: "))
+        if opcao == 2:
+            return True
+        elif opcao == 1:
+            chave = input("Digite a chave de acesso para confirmação: ")
+            if chave == chave_descriptogafada:
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print("Sistema de votaçao encerrado!")
+                auditoria.registrar_log("ENCERRAMENTO: Votação finalizada com sucesso")
+                time.sleep(0.5)
+                return False
     time.sleep(0.25)
     return True
 
@@ -85,12 +104,13 @@ def zerezima():
     total_votos = cursor.fetchall()
     print()
     print(f"Votos zerados: {total_votos}")
+    auditoria.registrar_log("ABERTURA: Votação iniciada com sucesso. Total de votos zerado.")
     input("Pressione ENTER para iniciar votação... ")
     menu_votacao()
 
 def menu_votacao():
-    opcao = 0
-    while opcao != 2:
+    opcao = True
+    while opcao == True:
         os.system('cls' if os.name == 'nt' else 'clear')
         print("=== Menu de Votação ===")
         print("1 - Votar\n2 - Encerrar Sistema de Votação")
@@ -102,11 +122,9 @@ def menu_votacao():
             continue
         match opcao:
             case 1:
-                validar_dados_eleitor(False)
+                validar_dados_eleitor(False, False)
             case 2:
-                print("\nEncerrando o sistema de votação...")
-                time.sleep(0.25)
-                return
+                opcao = validar_dados_eleitor(True, True)
             case _:
                 print("Opção inválida.")
 
@@ -140,13 +158,14 @@ def votar2(candidato_selecionado, partido_voto, id):
                 os.system('cls' if os.name == 'nt' else 'clear')
                 cursor.execute("UPDATE eleitores SET voto = %s WHERE id_eleitor = %s", (partido_voto, id,))
                 conexao_db.conexao.commit()
-                input("\nVoto registrado com sucesso!")
+                print("Voto registrado com sucesso!\n")
                 protocolo = protocolo_votacao(partido_voto)
                 print(f"O seu protocolo de votação é: {protocolo}")
                 data = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 cursor.execute("UPDATE eleitores SET protocolo_votacao = %s, data_votacao = %s WHERE id_eleitor = %s", (criptografia.criptografar(protocolo), data, id,))
                 conexao_db.conexao.commit()
-                time.sleep(1.5)
+                auditoria.registrar_log("SUCESSO: Voto realizado com sucesso")
+                input("Pressione ENTER para voltar ")
                 return False
             case 2:
                 print("\nCancelando Voto...")
