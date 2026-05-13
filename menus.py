@@ -1,11 +1,12 @@
 import os
-import conexão_db
+import conexao_db
+import votacao
 
 def main_menu():
     opcao = 0
     while opcao != 3:
         os.system('cls' if os.name == 'nt' else 'clear')
-        print("\n=== Módulos do Sistema de Votação ===")
+        print("=== Módulos do Sistema de Votação ===")
         print("1 - Módulo de Gerenciamento\n2 - Módulo de Votação\n3 - Encerrar Sistema")
         try:
             opcao = int(input("Informe a opção escolhida: "))
@@ -27,8 +28,8 @@ def menu_gerenciamento():
     opcao = 0
     while opcao != 4:
         os.system('cls' if os.name == 'nt' else 'clear')
-        print("\n=== Menu do Módulo de Gerenciamento ===")
-        print("1 - Cadastrar Novo Eleitor\n2 - Cadastrar Novo Candidato\n3 - Buscas Eleitor\n4 - Retornar")
+        print("=== Menu do Módulo de Gerenciamento ===")
+        print("1 - Cadastrar Novo Eleitor\n2 - Cadastrar Novo Candidato\n3 - Buscar Eleitor\n4 - Retornar")
         try:
             opcao = int(input("Informe a opção escolhida: "))
         except ValueError:
@@ -38,21 +39,23 @@ def menu_gerenciamento():
         match opcao:
             case 1:
                 # ****** FAZER VALIDAÇÃO PARA NÃO PODER COLOCAR O MESMO CPF, ACHO QUE DA PRA FAZER ISSO NA FUNÇÃO INSERIR_ELEITOR***********
-                print("\n=== Cadastramento de Eleitor ===")
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print("=== Cadastramento de Eleitor ===")
                 nome = input("Nome Completo: ")
                 titulo = input("Título de Eleitor: ")
                 cpf = input("CPF: ")
                 mesario = int(input("É mesário? (1-Sim / 0-Não): "))
                 chave_acesso=0
-                conexão_db.inserir_eleitor(nome, titulo, cpf, mesario, chave_acesso)
+                conexao_db.inserir_eleitor(nome, titulo, cpf, mesario, chave_acesso)
                 input("\nPressione ENTER para continuar...")
             case 2:
                 print("\n=== Cadastramento de Candidato ===")
                 input("\nPressione ENTER para continuar...")
             case 3:
-                print("\n=== Busca de Eleitor ===")
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print("=== Busca de Eleitor ===")
                 entrada = input("Digite o CPF ou Título: ")
-                conexão_db.busca_eleitor(entrada)
+                conexao_db.busca_eleitor(entrada)
                 input("\nPressione ENTER para continuar...")
             case 4:
                 print("Retornando ao menu principal...")
@@ -63,7 +66,7 @@ def menu_votacao():
     opcao = 0
     while opcao != 4:
         os.system('cls' if os.name == 'nt' else 'clear')
-        print("\n=== Menu do Módulo de Votação ===")
+        print("=== Menu do Módulo de Votação ===")
         print("1 - Abrir Sistema de Votação\n2 - Auditoria do Sistema de Votação\n3 - Resultado da Votação\n4 - Retornar")
         try:
             opcao = int(input("Informe a opção escolhida: "))
@@ -73,8 +76,7 @@ def menu_votacao():
             continue
         match opcao:
             case 1:
-                print("\n=== Sistema de Votação ===")
-                input("\nPressione ENTER para continuar...")
+                votacao.validar_dados_eleitor(True)
             case 2:
                 menu_auditoria()
             case 3:
@@ -88,7 +90,7 @@ def menu_resultados():
     opcao = 0
     while opcao != 5:
         os.system('cls' if os.name == 'nt' else 'clear')
-        print("\n=== Resultados da Votação ===")
+        print("=== Resultados da Votação ===")
         print("1 - Boletim de Urna\n2 - Estatística de Comparecimento\n3 - Votos por Partido\n4 - Validação da Integridade\n5 - Retornar")
         try:
             opcao = int(input("Informe a opção escolhida: "))
@@ -118,7 +120,7 @@ def menu_auditoria():
     opcao = 0
     while opcao != 3:
         os.system('cls' if os.name == 'nt' else 'clear')
-        print("\n=== Auditoria do Sistema de Votação ===")
+        print("=== Auditoria do Sistema de Votação ===")
         print("1 - Exibir Protocolos de Votação\n2 - Exibir Logs de Ocorrências\n3 - Retornar")
         try:
             opcao = int(input("Informe a opção escolhida: "))
