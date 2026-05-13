@@ -1,6 +1,7 @@
 import os
 import conexao_db
 import votacao
+import auditoria
 
 def main_menu():
     opcao = 0
@@ -76,7 +77,7 @@ def menu_votacao():
             continue
         match opcao:
             case 1:
-                votacao.validar_dados_eleitor(True)
+                votacao.validar_dados_eleitor(True, False)
             case 2:
                 menu_auditoria()
             case 3:
@@ -133,8 +134,10 @@ def menu_auditoria():
                 print("\n=== Protocolos de Votação ===")
                 input("\nPressione ENTER para continuar...")
             case 2:
-                print("\n=== Logs de Ocorrências ===")
-                input("\nPressione ENTER para continuar...")
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print("=== Logs de Ocorrências ===\n")
+                auditoria.ler_log()
+                input("\nPressione ENTER para voltar...")
             case 3:
                 print("Retornando...")
             case _:
