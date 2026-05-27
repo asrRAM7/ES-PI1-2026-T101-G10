@@ -10,8 +10,6 @@ Gabriel Hernandes Batista
 
 Gabriel Lara Jurgensen
 
-João Pedro Carlin
-
 Matthius Schultheis Matulis
 
 Ramiro Alexander Sempertegui Rodas
