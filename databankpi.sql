@@ -18,9 +18,10 @@ votou int
 );
 
 create table if not exists votos(
-voto int,
+voto INT,
 protocolo_votacao VARCHAR(15),
-data_votacao DATETIME
+data_votacao DATETIME,
+foreign key (voto) REFERENCES candidatos(numero_votacao)
 )
 
 # SELECT * FROM eleitores;

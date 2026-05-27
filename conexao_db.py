@@ -5,9 +5,9 @@ import criptografia
 # Conexão com o banco
 conexao = mysql.connector.connect(
     host='BD-ACD',
-    user='',
-    password='',
-    database='',
+    user='BD120226713',
+    password='Zyhfp7',
+    database='BD120226713',
 )
 cursor = conexao.cursor()
 
@@ -49,11 +49,20 @@ def inserir_eleitor():
             conexao.rollback()
 
 def inserir_candidato(nome_candidato, numero_votacao, partido):
-    sql = "INSERT INTO candidatos (nome_candidato, numero_votacao, partido) VALUES (%s, %s, %s)"
-    valores = (nome_candidato, numero_votacao, partido)
-    cursor.execute(sql, valores)
-    conexao.commit()
-    print("Candidato inserido com ID:", cursor.lastrowid)
+    try:
+        if not conexao.is_connected():
+            conexao.reconnect(attempts=3, delay=1)
+        sql = "INSERT INTO candidatos (nome_candidato, numero_votacao, partido) VALUES (%s, %s, %s)"
+        valores = (nome_candidato, numero_votacao, partido)
+        cursor.execute(sql, valores)
+        conexao.commit()
+        print(f"\nCandidato '{nome_candidato}' cadastrado com sucesso! ID: {cursor.lastrowid}")
+    except mysql.connector.Error as erro:
+        if erro.errno == 1062:
+            print(f"\n[ERRO] Já existe um candidato com este número de votação!")
+        else:
+            print(f"Erro ao inserir candidato: {erro}")
+            conexao.rollback()
 
 # ---------- Validação de CPF ----------
 def validar_cpf(cpf):
@@ -178,6 +187,26 @@ def busca_eleitor(entrada):
         print(f"Chave de Acesso: {criptografia.descriptografar(resultado[2],7)}")
     else:
         print("\nEleitor não localizado")
+
+def boletim_urna():
+    cursor.execute("""
+        SELECT c.nome_candidato, c.partido, COUNT(v.voto) AS total_votos
+        FROM candidatos c
+        LEFT JOIN votos v ON c.numero_votacao = v.voto
+        GROUP BY c.id_candidato, c.nome_candidato, c.partido
+        ORDER BY total_votos DESC
+    """)
+    resultados = cursor.fetchall()
+    print(f"\n{'Nome':<30} {'Partido':<25} {'Votos':>6}")
+    print("-" * 65)
+    for (nome, partido, total) in resultados:
+        print(f"{nome:<30} {partido:<25} {total:>6}")
+
+    # Votos nulos/brancos
+    cursor.execute("SELECT COUNT(*) FROM votos WHERE voto = 0")
+    nulos = cursor.fetchone()[0]
+    print("-" * 65)
+    print(f"{'Branco/Nulo':<30} {'':<25} {nulos:>6}")
 
 # Fechar conexão
 def fechar_conexao():

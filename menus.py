@@ -47,6 +47,15 @@ def menu_gerenciamento():
                 input("\nPressione ENTER para continuar...")
             case 2:
                 print("\n=== Cadastramento de Candidato ===")
+                nome_candidato = input("Nome do Candidato: ")
+                while True:
+                    try:
+                        numero_votacao = int(input("Número de Votação: "))
+                        break
+                    except ValueError:
+                        print("Número inválido. Digite apenas números.")
+                partido = input("Partido: ")
+                conexao_db.inserir_candidato(nome_candidato, numero_votacao, partido)
                 input("\nPressione ENTER para continuar...")
             case 3:
                 os.system('cls' if os.name == 'nt' else 'clear')
@@ -98,6 +107,7 @@ def menu_resultados():
         match opcao:
             case 1:
                 print("\n=== Boletim de Urna ===")
+                conexao_db.boletim_urna()
                 input("\nPressione ENTER para continuar...")
             case 2:
                 print("\n=== Estatística de Comparecimento ===")
