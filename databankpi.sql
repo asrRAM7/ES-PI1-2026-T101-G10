@@ -24,7 +24,7 @@ protocolo_votacao VARCHAR(12) NOT NULL UNIQUE,
 data_votacao DATETIME default current_timestamp,
 foreign key (id_eleitor) REFERENCES (id_eleitor),
 foreign key (id_candidato) REFERENCES (id_candidato)
-)
+);
 
 SELECT * FROM eleitores;
 // INSERT INTO eleicao_db.candidatos (nome_candidato,numero_votacao,partido)
