@@ -94,10 +94,10 @@ def menu_votacao():
 
 def menu_resultados():
     opcao = 0
-    while opcao != 5:
+    while opcao != 4:
         os.system('cls' if os.name == 'nt' else 'clear')
         print("=== Resultados da Votação ===")
-        print("1 - Boletim de Urna\n2 - Estatística de Comparecimento\n3 - Votos por Partido\n4 - Validação da Integridade\n5 - Retornar")
+        print("1 - Boletim de Urna\n2 - Estatística de Comparecimento\n3 - Votos por Partido\n4 - Retornar")
         try:
             opcao = int(input("Informe a opção escolhida: "))
         except ValueError:
@@ -106,19 +106,24 @@ def menu_resultados():
             continue
         match opcao:
             case 1:
+                os.system('cls' if os.name == 'nt' else 'clear')
                 print("\n=== Boletim de Urna ===")
                 conexao_db.boletim_urna()
                 input("\nPressione ENTER para continuar...")
             case 2:
+                os.system('cls' if os.name == 'nt' else 'clear')
                 print("\n=== Estatística de Comparecimento ===")
+                conexao_db.estatistica_comparecimento()
                 input("\nPressione ENTER para continuar...")
             case 3:
+                os.system('cls' if os.name == 'nt' else 'clear')
                 print("\n=== Votos por Partido ===")
+                conexao_db.votos_por_partido()
                 input("\nPressione ENTER para continuar...")
+            #case 4:
+                #print("\n=== Validação da Integridade ===")
+                #input("\nPressione ENTER para continuar...")
             case 4:
-                print("\n=== Validação da Integridade ===")
-                input("\nPressione ENTER para continuar...")
-            case 5:
                 print("Retornando...")
             case _:
                 print("Opção inválida.")
@@ -137,7 +142,9 @@ def menu_auditoria():
             continue
         match opcao:
             case 1:
+                os.system('cls' if os.name == 'nt' else 'clear')
                 print("\n=== Protocolos de Votação ===")
+                conexao_db.listar_protocolos()
                 input("\nPressione ENTER para continuar...")
             case 2:
                 os.system('cls' if os.name == 'nt' else 'clear')

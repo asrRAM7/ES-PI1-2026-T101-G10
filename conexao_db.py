@@ -208,6 +208,48 @@ def boletim_urna():
     print("-" * 65)
     print(f"{'Branco/Nulo':<30} {'':<25} {nulos:>6}")
 
+def estatistica_comparecimento():
+    cursor.execute("SELECT COUNT(*) FROM eleitores")
+    total_eleitores = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM votos")
+    total_votos = cursor.fetchone()[0]
+    ausentes = total_eleitores - total_votos
+    percentual = (total_votos / total_eleitores * 100) if total_eleitores > 0 else 0
+
+    print(f"\nTotal de eleitores cadastrados : {total_eleitores}")
+    print(f"Total de votos computados      : {total_votos}")
+    print(f"Ausentes                       : {ausentes}")
+    print(f"Percentual de comparecimento   : {percentual:.2f}%")
+
+def votos_por_partido():
+    cursor.execute("""
+        SELECT c.partido, COUNT(v.voto) AS total_votos
+        FROM candidatos c
+        LEFT JOIN votos v ON c.numero_votacao = v.voto
+        GROUP BY c.partido
+        ORDER BY total_votos DESC
+    """)
+    resultados = cursor.fetchall()
+    print(f"\n{'Partido':<30} {'Votos':>6}")
+    print("-" * 38)
+    for (partido, total) in resultados:
+        print(f"{partido:<30} {total:>6}")
+
+def listar_protocolos():
+    cursor.execute("""
+        SELECT v.protocolo_votacao, v.data_votacao
+        FROM votos v
+        ORDER BY v.data_votacao
+    """)
+    resultados = cursor.fetchall()
+    if not resultados:
+        print("\nNenhum voto registrado ainda.")
+        return
+    print(f"\n{'Protocolo':<28} {'Data/Hora':<22}")
+    print("-" * 75)
+    for (protocolo, data) in resultados:
+        print(f"{protocolo:<28} {str(data):<22}")
+
 # Fechar conexão
 def fechar_conexao():
     cursor.close()

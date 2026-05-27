@@ -1,6 +1,6 @@
 create database eleicao_db;
 use eleicao_db;
-create table candidatos(
+create table if not exists candidatos(
 id_candidato int primary key auto_increment, 
 nome_candidato varchar(50),
 numero_votacao int,
