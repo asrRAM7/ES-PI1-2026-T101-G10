@@ -11,10 +11,10 @@ partido varchar(50) NOT NULL
 create table eleitores(
 id_eleitor int primary key auto_increment,
 nome_eleitor varchar(50) NOT NULL,
-titulo_eleitor varchar(12) NOT NULL UNIQUE,
-cpf varchar(11) NOT NULL UNIQUE,
+titulo_eleitor varchar(24) NOT NULL UNIQUE,
+cpf varchar(12) NOT NULL UNIQUE,
 mesario INT NOT NULL,
-chave_acesso VARCHAR(10)
+chave_acesso VARCHAR(14)
 );
 
 create table votos(
@@ -27,5 +27,6 @@ foreign key (id_eleitor) REFERENCES eleitores(id_eleitor),
 foreign key (id_candidato) REFERENCES candidatos(id_candidato)
 );
 
+SELECT * FROM eleitores;
 -- INSERT INTO eleicao_db.candidatos (nome_candidato,numero_votacao,partido)
 -- VALUES ('Manuel',14,'Partido dos Aposentados');
