@@ -13,7 +13,7 @@ nome_eleitor varchar(50) NOT NULL,
 titulo_eleitor varchar(12) NOT NULL UNIQUE,
 cpf varchar(11) NOT NULL UNIQUE,
 mesario INT NOT NULL,
-chave_acesso VARCHAR(10),
+chave_acesso VARCHAR(10)
 );
 
 create table votos(
