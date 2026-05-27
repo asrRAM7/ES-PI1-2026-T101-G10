@@ -1,5 +1,6 @@
 create database if not exists eleicao_db;
 use eleicao_db;
+
 create table candidatos(
 id_candidato int primary key auto_increment, 
 nome_candidato varchar(50) NOT NULL,
@@ -22,10 +23,9 @@ id_eleitor INT NOT NULL,
 id_candidato INT, 
 protocolo_votacao VARCHAR(12) NOT NULL UNIQUE,
 data_votacao DATETIME default current_timestamp,
-foreign key (id_eleitor) REFERENCES (id_eleitor),
-foreign key (id_candidato) REFERENCES (id_candidato)
-)
+foreign key (id_eleitor) REFERENCES eleitores(id_eleitor),
+foreign key (id_candidato) REFERENCES candidatos(id_candidato)
+);
 
-SELECT * FROM eleitores;
-// INSERT INTO eleicao_db.candidatos (nome_candidato,numero_votacao,partido)
-// VALUES ('Manuel',14,'Partido dos Aposentados');
+-- INSERT INTO eleicao_db.candidatos (nome_candidato,numero_votacao,partido)
+-- VALUES ('Manuel',14,'Partido dos Aposentados');
