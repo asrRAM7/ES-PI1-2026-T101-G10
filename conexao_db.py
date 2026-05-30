@@ -1,8 +1,8 @@
 import mysql.connector
 import random
 import criptografia
-import os
 
+# Conexão com o banco
 conexao = mysql.connector.connect(
     host='localhost',
     user='root',
@@ -11,25 +11,28 @@ conexao = mysql.connector.connect(
 )
 cursor = conexao.cursor()
 
-
-# ---------- Inserir um novo eleitor ----------
-def inserir_eleitor(nome_eleitor, titulo_eleitor, cpf, mesario, chave_acesso):
-    # Remove pontuação do CPF e título antes de validar
-    cpf = limpar_numeros(cpf)
+# ---------- Inserir um novo usuário ----------
+def inserir_eleitor():
+# Verificação CPF e Título
+    nome_eleitor = input("Nome Completo: ")
+    titulo_eleitor = input("Título de Eleitor: ")
     titulo_eleitor = limpar_numeros(titulo_eleitor)
-
-    if validar_cpf(cpf) == 0:
-        print("Erro: CPF inválido!")
-        return
-
     if validar_titulo(titulo_eleitor) == 0:
         print("Erro: Título de Eleitor inválido!")
         return
+    
+    cpf = input("CPF: ")
+    cpf = limpar_numeros(cpf)
+    if validar_cpf(cpf) == 0:
+        print("Erro: CPF inválido!")
+        return
+    mesario = int(input("É mesário? (1-Sim / 0-Não): "))
 
-    # Criptografia
+# Passou nas duas verificações:
     chave_acesso = gerar_chave(nome_eleitor)
-    chave_criptografada  = criptografia.criptografar(chave_acesso)
-    cpf_criptografado    = criptografia.criptografar(cpf)
+# Criptografar os dados antes de inserir no banco de dados
+    chave_criptografada = criptografia.criptografar(chave_acesso)
+    cpf_criptografado = criptografia.criptografar(cpf)
     titulo_criptografado = criptografia.criptografar(titulo_eleitor)
     try:
         if not conexao.is_connected():
@@ -38,8 +41,8 @@ def inserir_eleitor(nome_eleitor, titulo_eleitor, cpf, mesario, chave_acesso):
         valores = (nome_eleitor, titulo_criptografado, cpf_criptografado, mesario, chave_criptografada)
         cursor.execute(sql, valores)
         conexao.commit()
-        print(f"\nEleitor inserido com sucesso!")
-        print(f"Chave de Acesso Gerada (Anote, pois não será exibida novamente): {chave_acesso}")
+        print(f"Eleitor inserido com Sucesso!")
+        print(f"Chave de Acesso Gerada (Anote ela para não perder): {chave_acesso}")
     except mysql.connector.Error as erro:
         if erro.errno == 1062:
             print(f"\n[ERRO] Já existe um eleitor cadastrado com este CPF ou Título de Eleitor!")
@@ -47,7 +50,6 @@ def inserir_eleitor(nome_eleitor, titulo_eleitor, cpf, mesario, chave_acesso):
             print(f"Erro ao inserir no banco: {erro}")
             conexao.rollback()
 
-# ---------- Inserir candidato ----------
 def inserir_candidato(nome_candidato, numero_votacao, partido):
     try:
         if not conexao.is_connected():
@@ -64,15 +66,12 @@ def inserir_candidato(nome_candidato, numero_votacao, partido):
             print(f"Erro ao inserir candidato: {erro}")
             conexao.rollback()
 
-
 # ---------- Validação de CPF ----------
 def validar_cpf(cpf):
-    if len(cpf) != 11 or not cpf.isdigit():
-        return 0
-    # Bloqueia repetição do mesmo número
-    if cpf == cpf[0] * 11:
-        return 0
-    # Cálculo do primeiro dígito verificador
+    if len(cpf) != 11:
+        if cpf == cpf[0] * 11:
+            return 0
+# Cálculo do primeiro dígito verificador
     soma1 = 0
     multiplicador = 10
     for i in range(9):
@@ -85,7 +84,7 @@ def validar_cpf(cpf):
         verificador1 = 11 - resto1
     if int(cpf[9]) != verificador1:
         return 0
-    # Cálculo do segundo dígito verificador
+# Cálculo do segundo dígito verificador
     soma2 = 0
     multiplicador = 11
     for i in range(10):
@@ -100,9 +99,8 @@ def validar_cpf(cpf):
         return 1
     else:
         return 0
-
-
-# ---------- Validação do Título de Eleitor ----------
+        
+# ---------- Validação do Título ---------- ******* VALIDAR CORRETAMENTE *********
 def validar_titulo(titulo):
     if len(titulo) != 12 or not titulo.isdigit():
         return 0
@@ -125,7 +123,7 @@ def validar_titulo(titulo):
         dv1 = resto
 
     # Cálculo do dígito verificador 2
-    soma2 = (int(uf[0]) * 7) + (int(uf[1]) * 8) + (dv1 * 9)
+    soma2 = (int(uf[0])*7)+(int(uf[1])*8)+(dv1*9)
     resto2 = soma2 % 11
 
     if resto2 == 10:
@@ -140,8 +138,7 @@ def validar_titulo(titulo):
         return 1 # título valido
     else:
         return 0 # título inválido
-
-
+    
 # ---------- Gerar Chave ----------
 def gerar_chave(nome):
     nome = limpar_entrada(nome)
@@ -157,16 +154,19 @@ def gerar_chave(nome):
     chave = str(parte_do_nome).upper() + str(numero_aleatorio)
     return chave
 
-
-# Limpar acentos
+# Funcão para limpar acentos de uma entrada
 def limpar_entrada(entrada):
     entrada = entrada.upper()
+
     com_acento = "ÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇÑ"
     sem_acento = "AAAAAEEEEIIIIOOOOOOUUUUCN"
+    
     for i in range(len(com_acento)):
         entrada = entrada.replace(com_acento[i], sem_acento[i])
+    
     return entrada
-# Remover a pontuação dos documentos
+
+# Função para limpar pontuação
 def limpar_numeros(entrada):
     return ''.join(c for c in entrada if c.isdigit())
 
@@ -175,36 +175,34 @@ def limpar_numeros(entrada):
 def listar_eleitores():
     cursor.execute("SELECT id_eleitor, nome_eleitor, titulo_eleitor, cpf, mesario FROM eleitores")
     for (id_eleitor, nome_eleitor, titulo_eleitor, cpf, mesario) in cursor.fetchall():
-        print(f"ID: {id_eleitor}, Nome: {nome_eleitor}, Título: {titulo_eleitor}, CPF: {cpf}, Mesário: {mesario}")
+        print(f"ID: {id_eleitor}, Nome: {nome_eleitor}, Título de Eleitor: {titulo_eleitor}, CPF: {cpf}, Mesário: {mesario}")
 
 def listar_candidatos():
     cursor.execute("SELECT id_candidato, nome_candidato, numero_votacao, partido FROM candidatos")
     for (id_candidato, nome_candidato, numero_votacao, partido) in cursor.fetchall():
-        print(f"ID: {id_candidato}, Nome: {nome_candidato}, Número: {numero_votacao}, Partido: {partido}")
-
+        print(f"ID: {id_candidato}, Nome: {nome_candidato}, Número de Votação: {numero_votacao}, Partido: {partido}")
 
 # ---------- Busca específica de eleitor ----------
 def busca_eleitor(entrada):
-    entrada = limpar_numeros(entrada)
-    entrada_criptografada = criptografia.criptografar(entrada)
+    # Criptografia para buscar no banco de dados
+    entrada = criptografia.criptografar(entrada)
     comando = "SELECT nome_eleitor, cpf, chave_acesso FROM eleitores WHERE cpf = %s OR titulo_eleitor = %s"
-    cursor.execute(comando, (entrada_criptografada, entrada_criptografada))
+    cursor.execute(comando, (entrada, entrada))
     resultado = cursor.fetchone()
     if resultado:
         print(f"\nResultado encontrado:")
         print(f"Nome: {resultado[0]}")
-        print(f"CPF: {criptografia.descriptografar(resultado[1], 11)}")
-        print(f"Chave de Acesso: {criptografia.descriptografar(resultado[2], 7)}")
+        # Descriptografia para mostrar os dados
+        print(f"CPF: {criptografia.descriptografar(resultado[1],11)}")
+        print(f"Chave de Acesso: {criptografia.descriptografar(resultado[2],7)}")
     else:
-        print("\nEleitor não localizado.")
+        print("\nEleitor não localizado")
 
-
-# ---------- Resultados ----------
 def boletim_urna():
     cursor.execute("""
-        SELECT c.nome_candidato, c.partido, COUNT(v.id_candidato) AS total_votos
+        SELECT c.nome_candidato, c.partido, COUNT(v.voto) AS total_votos
         FROM candidatos c
-        LEFT JOIN votos v ON c.id_candidato = v.id_candidato
+        LEFT JOIN votos v ON c.numero_votacao = v.voto
         GROUP BY c.id_candidato, c.nome_candidato, c.partido
         ORDER BY total_votos DESC
     """)
@@ -215,11 +213,10 @@ def boletim_urna():
         print(f"{nome:<30} {partido:<25} {total:>6}")
 
     # Votos nulos/brancos
-    cursor.execute("SELECT COUNT(*) FROM votos WHERE id_candidato IS NULL")
+    cursor.execute("SELECT COUNT(*) FROM votos WHERE voto = 0")
     nulos = cursor.fetchone()[0]
     print("-" * 65)
     print(f"{'Branco/Nulo':<30} {'':<25} {nulos:>6}")
-
 
 def estatistica_comparecimento():
     cursor.execute("SELECT COUNT(*) FROM eleitores")
@@ -234,12 +231,11 @@ def estatistica_comparecimento():
     print(f"Ausentes                       : {ausentes}")
     print(f"Percentual de comparecimento   : {percentual:.2f}%")
 
-
 def votos_por_partido():
     cursor.execute("""
-        SELECT c.partido, COUNT(v.id_candidato) AS total_votos
+        SELECT c.partido, COUNT(v.voto) AS total_votos
         FROM candidatos c
-        LEFT JOIN votos v ON c.id_candidato = v.id_candidato
+        LEFT JOIN votos v ON c.numero_votacao = v.voto
         GROUP BY c.partido
         ORDER BY total_votos DESC
     """)
@@ -249,25 +245,46 @@ def votos_por_partido():
     for (partido, total) in resultados:
         print(f"{partido:<30} {total:>6}")
 
-
 def listar_protocolos():
     cursor.execute("""
-        SELECT v.protocolo_votacao, v.data_votacao, e.nome_eleitor
+        SELECT v.protocolo_votacao, v.data_votacao
         FROM votos v
-        JOIN eleitores e ON v.id_eleitor = e.id_eleitor
         ORDER BY v.data_votacao
     """)
     resultados = cursor.fetchall()
     if not resultados:
         print("\nNenhum voto registrado ainda.")
         return
-    print(f"\n{'Protocolo (criptografado)':<28} {'Data/Hora':<22} {'Eleitor'}")
+    print(f"\n{'Protocolo':<28} {'Data/Hora':<22}")
     print("-" * 75)
-    for (protocolo, data, nome) in resultados:
-        print(f"{protocolo:<28} {str(data):<22} {nome}")
+    for (protocolo, data) in resultados:
+        print(f"{protocolo:<28} {str(data):<22}")
 
+def validar_integridade():
+    cursor.execute("SELECT COUNT(*) FROM votos")
+    total_votos = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM eleitores WHERE votou IS NOT NULL")
+    eleitores_que_votaram = cursor.fetchone()[0]
 
-# ---------- Fechar conexão ----------
+    print(f"\n{'─' * 50}")
+    print(f"{'RELATÓRIO DE VALIDAÇÃO DE INTEGRIDADE':^50}")
+    print(f"{'─' * 50}")
+    print(f"\n  Votos registrados na urna         : {total_votos}")
+    print(f"  Eleitores com status 'Já Votou'   : {eleitores_que_votaram}")
+    print(f"\n{'─' * 50}")
+
+    if total_votos == eleitores_que_votaram:
+        print(f"\nINTEGRIDADE CONFIRMADA")
+        print(f"     Os totais coincidem. Nenhuma inconsistência detectada.")
+    else:
+        diferenca = abs(total_votos - eleitores_que_votaram)
+        print(f"\nINCONSISTÊNCIA DETECTADA")
+        print(f"     Diferença de {diferenca} registro(s) entre a urna")
+        print(f"     e o cadastro de eleitores que votaram.")
+
+    print(f"\n{'─' * 50}")
+
+# Fechar conexão
 def fechar_conexao():
     cursor.close()
     conexao.close()
