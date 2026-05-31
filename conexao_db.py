@@ -6,7 +6,7 @@ import criptografia
 conexao = mysql.connector.connect(
     host='localhost',
     user='root',
-    password='',
+    password='Alexander0202*',
     database='eleicao_db',
 )
 cursor = conexao.cursor()
@@ -276,6 +276,7 @@ def excluir_eleitor(id_eleitor):
         cursor.execute("DELETE FROM eleitores WHERE id_eleitor = %s", (id_eleitor,))
         conexao.commit()
         print("\n\033[32mEleitor excluído com sucesso!\033[0m")
+        input("\nPressione \033[1m\033[37mENTER\033[0m para continuar...")
     except mysql.connector.Error as erro:
         print(f"\033[31mErro ao excluir:\033[0m {erro}")
         conexao.rollback()
@@ -366,6 +367,7 @@ def excluir_candidato(id_candidato):
         cursor.execute("DELETE FROM candidatos WHERE id_candidato = %s", (id_candidato,))
         conexao.commit()
         print("\n\033[32mCandidato excluído com sucesso!\033[0m")
+        input("\nPressione \033[1m\033[37mENTER\033[0m para continuar...")
     except mysql.connector.Error as erro:
         print(f"\033[31mErro ao excluir:\033[0m {erro}")
         conexao.rollback()
