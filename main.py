@@ -31,14 +31,14 @@ def ascii(screen):
               stop_frame=200),
         Print(screen,
               FigletText("LAD.py",
-                         font='banner3' if screen.width > 80 else 'banner'),
+                         font='banner' if screen.width > 80 else 'banner'),
               screen.height//2-3,
               colour=7, bg=7 if screen.unicode_aware else 0),
     ]
     scenes.append(Scene(effects, name="cena0"))
     effects = [
         Print(screen,
-              FigletText("Grupo - 10\nGabriel Hernandes\nGabriel Lara\nMatthius dhusdjsld\nRamiro Alexander",
+              FigletText("Grupo - 10\nGabriel Hernandes\nGabriel Lara\nMatthius Schultheis\nRamiro Alexander",
                          font='banner'),
               screen.height,
               speed=1,

@@ -6,7 +6,7 @@ import criptografia
 conexao = mysql.connector.connect(
     host='localhost',
     user='root',
-    password='',
+    password='1324BunD#37',
     database='eleicao_db',
 )
 cursor = conexao.cursor()
@@ -18,15 +18,15 @@ def inserir_eleitor():
     titulo_eleitor = input("Título de Eleitor: ")
     titulo_eleitor = limpar_numeros(titulo_eleitor)
     if validar_titulo(titulo_eleitor) == 0:
-        print("Erro: Título de Eleitor inválido!")
+        print("\033[31mErro:\033[0m Título de Eleitor inválido!")
         return
     
     cpf = input("CPF: ")
     cpf = limpar_numeros(cpf)
     if validar_cpf(cpf) == 0:
-        print("Erro: CPF inválido!")
+        print("\033[31mErro:\033[0m CPF inválido!")
         return
-    mesario = int(input("É mesário? (1-Sim / 0-Não): "))
+    mesario = int(input("É mesário? (\033[1m\033[37m[1]\033[0m - Sim / \033[1m\033[37m[0]\033[0m - Não): "))
 
 # Passou nas duas verificações:
     chave_acesso = gerar_chave(nome_eleitor)
@@ -41,13 +41,13 @@ def inserir_eleitor():
         valores = (nome_eleitor, titulo_criptografado, cpf_criptografado, mesario, chave_criptografada)
         cursor.execute(sql, valores)
         conexao.commit()
-        print(f"Eleitor inserido com Sucesso!")
-        print(f"Chave de Acesso Gerada (Anote ela para não perder): {chave_acesso}")
+        print(f"\033[32mEleitor inserido com Sucesso!\033[0m")
+        print(f"Chave de Acesso Gerada (Anote ela para não perder): \033[1m\033[37m{chave_acesso}\033[0m")
     except mysql.connector.Error as erro:
         if erro.errno == 1062:
-            print(f"\n[ERRO] Já existe um eleitor cadastrado com este CPF ou Título de Eleitor!")
+            print(f"\n\033[31m[ERRO]\033[0m Já existe um eleitor cadastrado com este CPF ou Título de Eleitor!")
         else:
-            print(f"Erro ao inserir no banco: {erro}")
+            print(f"\033[31mErro ao inserir no banco:\033[0m {erro}")
             conexao.rollback()
 
 def inserir_candidato(nome_candidato, numero_votacao, partido):
@@ -58,19 +58,20 @@ def inserir_candidato(nome_candidato, numero_votacao, partido):
         valores = (nome_candidato, numero_votacao, partido)
         cursor.execute(sql, valores)
         conexao.commit()
-        print(f"\nCandidato '{nome_candidato}' cadastrado com sucesso! ID: {cursor.lastrowid}")
+        print(f"\nCandidato '{nome_candidato}' cadastrado com sucesso! ID: \033[1m\033[37m{cursor.lastrowid}\033[0m")
     except mysql.connector.Error as erro:
         if erro.errno == 1062:
-            print(f"\n[ERRO] Já existe um candidato com este número de votação!")
+            print(f"\n\033[31m[ERRO]\033[0m Já existe um candidato com este número de votação!")
         else:
-            print(f"Erro ao inserir candidato: {erro}")
+            print(f"\033[31mErro ao inserir candidato:\033[0m \033[1m\033[37m{erro}\033[0m")
             conexao.rollback()
 
 # ---------- Validação de CPF ----------
 def validar_cpf(cpf):
     if len(cpf) != 11:
-        if cpf == cpf[0] * 11:
-            return 0
+        return 0  
+    if cpf == cpf[0] * 11:
+        return 0  
 # Cálculo do primeiro dígito verificador
     soma1 = 0
     multiplicador = 10
@@ -184,7 +185,11 @@ def listar_candidatos():
 
 # ---------- Busca específica de eleitor ----------
 def busca_eleitor(entrada):
-    # Criptografia para buscar no banco de dados
+    entrada = limpar_numeros(entrada)
+    if len(entrada) not in (11, 12):
+        print("\nEntrada inválida! Digite um CPF (11 dígitos) ou Título de Eleitor (12 dígitos).")
+        return
+    entrada = criptografia.criptografar(entrada)
     entrada = criptografia.criptografar(entrada)
     comando = "SELECT nome_eleitor, cpf, chave_acesso FROM eleitores WHERE cpf = %s OR titulo_eleitor = %s"
     cursor.execute(comando, (entrada, entrada))
@@ -196,7 +201,7 @@ def busca_eleitor(entrada):
         print(f"CPF: {criptografia.descriptografar(resultado[1],11)}")
         print(f"Chave de Acesso: {criptografia.descriptografar(resultado[2],7)}")
     else:
-        print("\nEleitor não localizado")
+        print("\n\033[33mEleitor não localizado\033[0m")
 
 def boletim_urna():
     cursor.execute("""
@@ -226,10 +231,10 @@ def estatistica_comparecimento():
     ausentes = total_eleitores - total_votos
     percentual = (total_votos / total_eleitores * 100) if total_eleitores > 0 else 0
 
-    print(f"\nTotal de eleitores cadastrados : {total_eleitores}")
-    print(f"Total de votos computados      : {total_votos}")
-    print(f"Ausentes                       : {ausentes}")
-    print(f"Percentual de comparecimento   : {percentual:.2f}%")
+    print(f"\nTotal de eleitores cadastrados : \033[1m\033[37m{total_eleitores}\033[0m")
+    print(f"Total de votos computados      : \033[1m\033[37m{total_votos}\033[0m")
+    print(f"Ausentes                       : \033[1m\033[37m{ausentes}\033[0m")
+    print(f"Percentual de comparecimento   : \033[1m\033[37m{percentual:.2f}%\033[0m")
 
 def votos_por_partido():
     cursor.execute("""
@@ -253,7 +258,7 @@ def listar_protocolos():
     """)
     resultados = cursor.fetchall()
     if not resultados:
-        print("\nNenhum voto registrado ainda.")
+        print("\n\033[33mNenhum voto registrado ainda.\033[0m")
         return
     print(f"\n{'Protocolo':<28} {'Data/Hora':<22}")
     print("-" * 75)
@@ -269,8 +274,8 @@ def validar_integridade():
     print(f"\n{'─' * 50}")
     print(f"{'RELATÓRIO DE VALIDAÇÃO DE INTEGRIDADE':^50}")
     print(f"{'─' * 50}")
-    print(f"\n  Votos registrados na urna         : {total_votos}")
-    print(f"  Eleitores com status 'Já Votou'   : {eleitores_que_votaram}")
+    print(f"\n  Votos registrados na urna         : \033[1m\033[37m{total_votos}\033[0m")
+    print(f"  Eleitores com status 'Já Votou'   : \033[1m\033[37m{eleitores_que_votaram}\033[0m")
     print(f"\n{'─' * 50}")
 
     if total_votos == eleitores_que_votaram:
@@ -278,7 +283,7 @@ def validar_integridade():
         print(f"     Os totais coincidem. Nenhuma inconsistência detectada.")
     else:
         diferenca = abs(total_votos - eleitores_que_votaram)
-        print(f"\nINCONSISTÊNCIA DETECTADA")
+        print(f"\n\033[31mINCONSISTÊNCIA DETECTADA\033[0m")
         print(f"     Diferença de {diferenca} registro(s) entre a urna")
         print(f"     e o cadastro de eleitores que votaram.")
 
