@@ -56,14 +56,27 @@ def menu_gerenciamento():
                 print("=" * 50)
                 print(f"{'CADASTRAMENTO DE CANDIDATO':^50}")
                 print("=" * 50)
-                nome_candidato = input("Nome do Candidato: ")
-                while True:
-                    try:
-                        numero_votacao = int(input("Número de Votação: "))
-                        break
-                    except ValueError:
-                        print("\033[33mNúmero inválido.\033[0m Digite apenas números.")
-                partido = input("Partido: ")
+                nome_candidato = input("Nome do Candidato: ").strip()
+                if not nome_candidato:
+                    print("\n\033[33mNome não pode ser vazio.\033[0m")
+                    input("\nPressione \033[1m\033[37mENTER\033[0m para voltar...")
+                    continue
+                numero_str = input("Número de Votação: ").strip()
+                if not numero_str:
+                    print("\n\033[33mNúmero de votação não pode ser vazio.\033[0m")
+                    input("\nPressione \033[1m\033[37mENTER\033[0m para voltar...")
+                    continue
+                try:
+                    numero_votacao = int(numero_str)
+                except ValueError:
+                    print("\n\033[33mNúmero inválido.\033[0m Digite apenas números.")
+                    input("\nPressione \033[1m\033[37mENTER\033[0m para voltar...")
+                    continue
+                partido = input("Partido: ").strip()
+                if not partido:
+                    print("\n\033[33mPartido não pode ser vazio.\033[0m")
+                    input("\nPressione \033[1m\033[37mENTER\033[0m para voltar...")
+                    continue
                 conexao_db.inserir_candidato(nome_candidato, numero_votacao, partido)
                 input("\nPressione \033[1m\033[37mENTER\033[0m para continuar...")
             case 3:
