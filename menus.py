@@ -31,12 +31,12 @@ def main_menu():
 
 def menu_gerenciamento():
     opcao = 0
-    while opcao != 4:
+    while opcao != 7:
         os.system('cls' if os.name == 'nt' else 'clear')
         print("=" * 50)
         print(f"{'MENU DO MÓDULO DO GERENCIAMENTO':^50}")
         print("=" * 50)
-        print("\033[1m\033[37m[1]\033[0m - Cadastrar Novo Eleitor\n\033[1m\033[37m[2]\033[0m - Cadastrar Novo Candidato\n\033[1m\033[37m[3]\033[0m - Buscar Eleitor\n\033[1m\033[37m[4]\033[0m - Retornar")
+        print("\033[1m\033[37m[1]\033[0m - Cadastrar Novo Eleitor\n\033[1m\033[37m[2]\033[0m - Cadastrar Novo Candidato\n\033[1m\033[37m[3]\033[0m - Buscar Eleitor\n\033[1m\033[37m[4]\033[0m - Buscar Candidato\n\033[1m\033[37m[5]\033[0m - Listar Eleitores\n\033[1m\033[37m[6]\033[0m - Listar Candidatos\n\033[1m\033[37m[7]\033[0m - Retornar")
         try:
             opcao = int(input("Informe a opção escolhida: "))
         except ValueError:
@@ -45,7 +45,6 @@ def menu_gerenciamento():
             continue
         match opcao:
             case 1:
-                # ****** FAZER VALIDAÇÃO PARA NÃO PODER COLOCAR O MESMO CPF, ACHO QUE DA PRA FAZER ISSO NA FUNÇÃO INSERIR_ELEITOR***********
                 os.system('cls' if os.name == 'nt' else 'clear')
                 print("=" * 50)
                 print(f"{'CADASTRO DE ELEITOR':^50}")
@@ -53,6 +52,7 @@ def menu_gerenciamento():
                 conexao_db.inserir_eleitor()
                 input("\nPressione \033[1m\033[37mENTER\033[0m para continuar...")
             case 2:
+                os.system('cls' if os.name == 'nt' else 'clear')
                 print("=" * 50)
                 print(f"{'CADASTRAMENTO DE CANDIDATO':^50}")
                 print("=" * 50)
@@ -73,8 +73,30 @@ def menu_gerenciamento():
                 print("=" * 50)
                 entrada = input("Digite o CPF ou Título: ")
                 conexao_db.busca_eleitor(entrada)
-                input("\nPressione \033[1m\033[37mENTER\033[0m para continuar...")
             case 4:
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print("=" * 50)
+                print(f"{'BUSCA DE CANDIDATO':^50}")
+                print("=" * 50)
+                numero = input("Digite o número de votação: ")
+                conexao_db.busca_candidato(numero)
+            case 5:
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print("=" * 50)
+                print(f"{'LISTA DE ELEITORES':^50}")
+                print("=" * 50)
+                if votacao.validar_mesario():
+                    conexao_db.listar_eleitores()
+                    input("\nPressione \033[1m\033[37mENTER\033[0m para continuar...")
+            case 6:
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print("=" * 50)
+                print(f"{'LISTA DE CANDIDATOS':^50}")
+                print("=" * 50)
+                if votacao.validar_mesario():
+                    conexao_db.listar_candidatos()
+                    input("\nPressione \033[1m\033[37mENTER\033[0m para continuar...")
+            case 7:
                 print("Retornando ao menu principal...")
             case _:
                 print("\033[33mOpção inválida.\033[0m")
@@ -97,6 +119,8 @@ def menu_votacao():
         match opcao:
             case 1:
                 votacao.validar_dados_eleitor(True, False)
+                # Após encerramento da votação, o fluxo retorna aqui
+                # com Auditoria e Resultados disponíveis no menu
             case 2:
                 menu_auditoria()
             case 3:

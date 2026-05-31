@@ -93,9 +93,14 @@ def validar_dados_eleitor(mesario, encerrar):
             chave = input("Digite a chave de acesso para confirmação: ")
             if chave == chave_descriptogafada:
                 os.system('cls' if os.name == 'nt' else 'clear')
-                print("Sistema de votaçao encerrado!")
-                auditoria.registrar_log("\033[1m\033[37mENCERRAMENTO:\033[0m Votação finalizada com sucesso")
-                time.sleep(0.5)
+                print("=" * 50)
+                print(f"{'VOTAÇÃO ENCERRADA':^50}")
+                print("=" * 50)
+                print("\n\033[32mSistema de votação encerrado com sucesso!\033[0m")
+                print("\nVocê será redirecionado ao menu de Resultados e Auditoria.")
+                auditoria.registrar_log("ENCERRAMENTO: Votação finalizada com sucesso")
+                time.sleep(1.5)
+                input("\nPressione \033[1m\033[37mENTER\033[0m para continuar...")
                 return False
     time.sleep(0.25)
     return True
@@ -121,13 +126,70 @@ def zerezima():
     cursor.execute("DELETE FROM votos")
     conexao_db.conexao.commit()
 
-    cursor.execute("SELECT nome_eleitor, votou FROM eleitores")
-    total_votos = cursor.fetchall()
+    cursor.execute("SELECT nome_candidato, numero_votacao, partido FROM candidatos")
+    candidatos = cursor.fetchall()
     print()
-    print(f"Votos zerados: {total_votos}")
-    auditoria.registrar_log("\033[1m\033[37mABERTURA:\033[0m Votação iniciada com sucesso. Total de votos zerado.")
-    input("Pressione \033[1m\033[37mENTER\033[0m para iniciar votação... ")
+    print(f"\n{'─' * 55}")
+    print(f"{'COMPROVAÇÃO DE URNA ZERADA':^55}")
+    print(f"{'─' * 55}")
+    print(f"  {'Candidato':<28} {'Número':^8} {'Votos':>6}")
+    print(f"  {'─' * 46}")
+    for (nome, numero, partido) in candidatos:
+        print(f"  {nome:<28} {numero:^8} {'0':>6}")
+    print(f"{'─' * 55}")
+    print(f"\n\033[32mUrna zerada com sucesso! Todos os candidatos possuem 0 votos.\033[0m")
+    auditoria.registrar_log("ABERTURA: Votação iniciada com sucesso. Total de votos zerado.")
+    input("\nPressione \033[1m\033[37mENTER\033[0m para iniciar votação... ")
     menu_votacao()
+
+def validar_mesario():
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print("=" * 50)
+    print(f"{'AUTENTICAÇÃO DE MESÁRIO':^50}")
+    print("=" * 50)
+
+    titulo_eleitor = input("Título de Eleitor: ")
+    cpf_4_digitos = input("4 primeiros dígitos do CPF: ")
+    chave_acesso = input("Chave de Acesso: ")
+
+    titulo_eleitor = conexao_db.limpar_numeros(titulo_eleitor)
+    if len(titulo_eleitor) != 12:
+        print("\nTítulo de Eleitor inválido!")
+        input("\nPressione \033[1m\033[37mENTER\033[0m para continuar...")
+        return False
+
+    titulo_criptografado = criptografia.criptografar(titulo_eleitor)
+    cursor.execute("SELECT nome_eleitor, cpf, chave_acesso, mesario FROM eleitores WHERE titulo_eleitor = %s", (titulo_criptografado,))
+    resultado = cursor.fetchone()
+
+    if not resultado:
+        print("\n\033[33mMesário não localizado!\033[0m")
+        input("\nPressione \033[1m\033[37mENTER\033[0m para continuar...")
+        return False
+
+    chave_descriptografada = criptografia.descriptografar(resultado[2], 7)
+    cpf_descriptografado = criptografia.descriptografar(resultado[1], 4)
+
+    if cpf_descriptografado != cpf_4_digitos:
+        print("\n\033[31mCPF incorreto!\033[0m")
+        input("\nPressione \033[1m\033[37mENTER\033[0m para continuar...")
+        auditoria.registrar_log("\033[31mALERTA:\033[0m Tentativa de acesso negado")
+        return False
+
+    if chave_descriptografada != chave_acesso:
+        print("\n\033[31mChave de acesso incorreta!\033[0m")
+        input("\nPressione \033[1m\033[37mENTER\033[0m para continuar...")
+        auditoria.registrar_log("\033[31mALERTA:\033[0m Tentativa de acesso negado")
+        return False
+
+    if resultado[3] != 1:
+        print(f"\n\033[31m{resultado[0]} não é mesário!\033[0m")
+        input("\nPressione \033[1m\033[37mENTER\033[0m para continuar...")
+        auditoria.registrar_log("\033[31mALERTA:\033[0m Tentativa de acesso negado")
+        return False
+
+    print(f"\nIdentidade confirmada! Bem-vindo(a), \033[1m\033[37m{resultado[0]}!\033[0m")
+    return True
 
 def menu_votacao():
     opcao = 0
@@ -147,7 +209,10 @@ def menu_votacao():
             case 1:
                 validar_dados_eleitor(False, False)
             case 2:
-                opcao = validar_dados_eleitor(True, True)
+                resultado_encerramento = validar_dados_eleitor(True, True)
+                if resultado_encerramento == False:
+                    # Votação encerrada — sai do loop e retorna ao menu de votação (menus.py)
+                    return
             case 3:
                 print("Retornando ao menu principal...")
             case _:
@@ -190,25 +255,29 @@ def votar2(candidato_selecionado, partido_voto, id, nulo):
                     cursor.execute("UPDATE eleitores SET votou = %s WHERE id_eleitor = %s", (1, id,))
                     conexao_db.conexao.commit()
                     print("Voto registrado com sucesso!\n")
-                    protocolo = protocolo_votacao(partido_voto,nulo=False)
+                    protocolo = protocolo_votacao(partido_voto, nulo=False)
+                    protocolo_criptografado = criptografia.criptografar(protocolo)
                     print(f"O seu protocolo de votação é: \033[1m\033[37m{protocolo}\033[0m")
+                    print(f"\033[90m(Guarde este protocolo — ele comprova que seu voto foi registrado)\033[0m")
                     data = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    cursor.execute("INSERT INTO votos (voto, protocolo_votacao, data_votacao) VALUES (%s, %s, %s)", (partido_voto, protocolo, data,))
+                    cursor.execute("INSERT INTO votos (voto, protocolo_votacao, data_votacao) VALUES (%s, %s, %s)", (partido_voto, protocolo_criptografado, data,))
                     conexao_db.conexao.commit()
-                    auditoria.registrar_log("\033[1m\033[32mSUCESSO:\033[0m Voto realizado com sucesso")
-                    input("Pressione \033[1m\033[37mENTER\033[0m para voltar ")
+                    auditoria.registrar_log("SUCESSO: Voto realizado com sucesso")
+                    input("\nPressione \033[1m\033[37mENTER\033[0m para voltar ")
                     return False
                 else:
                     cursor.execute("UPDATE eleitores SET votou = %s WHERE id_eleitor = %s", (1, id,))
                     conexao_db.conexao.commit()
                     print("Voto registrado com sucesso!\n")
-                    protocolo = protocolo_votacao(partido_voto,nulo=True)
+                    protocolo = protocolo_votacao(partido_voto, nulo=True)
+                    protocolo_criptografado = criptografia.criptografar(protocolo)
                     print(f"O seu protocolo de votação é: \033[1m\033[37m{protocolo}\033[0m")
+                    print(f"\033[90m(Guarde este protocolo — ele comprova que seu voto foi registrado)\033[0m")
                     data = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    cursor.execute("INSERT INTO votos (voto, protocolo_votacao, data_votacao) VALUES (00, %s, %s)", (protocolo, data,))
+                    cursor.execute("INSERT INTO votos (voto, protocolo_votacao, data_votacao) VALUES (00, %s, %s)", (protocolo_criptografado, data,))
                     conexao_db.conexao.commit()
-                    auditoria.registrar_log("\033[1m\033[32mSUCESSO:\033[0m Voto realizado com sucesso")
-                    input("Pressione \033[1m\033[37mENTER\033[0m para voltar ")
+                    auditoria.registrar_log("SUCESSO: Voto realizado com sucesso")
+                    input("\nPressione \033[1m\033[37mENTER\033[0m para voltar ")
                     return False
             case 2:
                 print("\nCancelando Voto...")

@@ -24,5 +24,6 @@ data_votacao DATETIME,
 foreign key (voto) REFERENCES candidatos(numero_votacao)
 );
 
+# SELECT * FROM votos;
 # SELECT * FROM eleitores;
 # DROP TABLE eleitores;

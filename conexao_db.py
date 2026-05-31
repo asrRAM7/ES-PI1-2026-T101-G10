@@ -6,7 +6,7 @@ import criptografia
 conexao = mysql.connector.connect(
     host='localhost',
     user='root',
-    password='1324BunD#37',
+    password='Alexander0202*',
     database='eleicao_db',
 )
 cursor = conexao.cursor()
@@ -174,14 +174,16 @@ def limpar_numeros(entrada):
 
 # ---------- Buscar todos os usuários ----------
 def listar_eleitores():
-    cursor.execute("SELECT id_eleitor, nome_eleitor, titulo_eleitor, cpf, mesario FROM eleitores")
-    for (id_eleitor, nome_eleitor, titulo_eleitor, cpf, mesario) in cursor.fetchall():
-        print(f"ID: {id_eleitor}, Nome: {nome_eleitor}, Título de Eleitor: {titulo_eleitor}, CPF: {cpf}, Mesário: {mesario}")
-
+    cursor.execute("SELECT nome_eleitor, titulo_eleitor, cpf, mesario FROM eleitores")
+    for (nome_eleitor, titulo_eleitor, cpf, mesario) in cursor.fetchall():
+        mesario_str = "Sim" if mesario == 1 else "Não"
+        titulo_desc = criptografia.descriptografar(titulo_eleitor, 12)
+        cpf_desc = criptografia.descriptografar(cpf, 11)
+        print(f"Nome: {nome_eleitor}, Título de Eleitor: {titulo_desc}, CPF: {cpf_desc}, Mesário: {mesario_str}")
 def listar_candidatos():
-    cursor.execute("SELECT id_candidato, nome_candidato, numero_votacao, partido FROM candidatos")
-    for (id_candidato, nome_candidato, numero_votacao, partido) in cursor.fetchall():
-        print(f"ID: {id_candidato}, Nome: {nome_candidato}, Número de Votação: {numero_votacao}, Partido: {partido}")
+    cursor.execute("SELECT nome_candidato, numero_votacao, partido FROM candidatos")
+    for (nome_candidato, numero_votacao, partido) in cursor.fetchall():
+        print(f"Nome: {nome_candidato}, Número de Votação: {numero_votacao}, Partido: {partido}")
 
 # ---------- Busca específica de eleitor ----------
 def busca_eleitor(entrada):
@@ -190,18 +192,183 @@ def busca_eleitor(entrada):
         print("\nEntrada inválida! Digite um CPF (11 dígitos) ou Título de Eleitor (12 dígitos).")
         return
     entrada = criptografia.criptografar(entrada)
-    entrada = criptografia.criptografar(entrada)
-    comando = "SELECT nome_eleitor, cpf, chave_acesso FROM eleitores WHERE cpf = %s OR titulo_eleitor = %s"
+    comando = "SELECT nome_eleitor, cpf, titulo_eleitor, chave_acesso, id_eleitor FROM eleitores WHERE cpf = %s OR titulo_eleitor = %s"
     cursor.execute(comando, (entrada, entrada))
     resultado = cursor.fetchone()
     if resultado:
         print(f"\nResultado encontrado:")
         print(f"Nome: {resultado[0]}")
-        # Descriptografia para mostrar os dados
-        print(f"CPF: {criptografia.descriptografar(resultado[1],11)}")
-        print(f"Chave de Acesso: {criptografia.descriptografar(resultado[2],7)}")
+        print(f"CPF: {criptografia.descriptografar(resultado[1], 11)}")
+        print(f"Título de Eleitor: {criptografia.descriptografar(resultado[2], 12)}")
+        print(f"Chave de Acesso: {criptografia.descriptografar(resultado[3], 7)}")
+        id_eleitor = resultado[4]
+        print(f"\n\033[1m\033[37m[1]\033[0m - Editar Eleitor")
+        print(f"\033[1m\033[37m[2]\033[0m - Excluir Eleitor")
+        print(f"\033[1m\033[37m[3]\033[0m - Voltar")
+        try:
+            opcao = int(input("\nInforme a opção escolhida: "))
+        except ValueError:
+            print("\033[33mOpção inválida.\033[0m")
+            return
+        if opcao == 1:
+            import votacao
+            if votacao.validar_mesario():
+                editar_eleitor(id_eleitor)
+        elif opcao == 2:
+            import votacao
+            if votacao.validar_mesario():
+                excluir_eleitor(id_eleitor)
     else:
         print("\n\033[33mEleitor não localizado\033[0m")
+        input("\nPressione \033[1m\033[37mENTER\033[0m para continuar...")
+
+def editar_eleitor(id_eleitor):
+    print("\nDeixe em branco para manter o valor atual.")
+    nome = input("Novo nome: ")
+    titulo = input("Novo Título de Eleitor: ")
+    titulo = limpar_numeros(titulo)
+    cpf = input("Novo CPF: ")
+    cpf = limpar_numeros(cpf)
+
+    if titulo and validar_titulo(titulo) == 0:
+        print("\033[31mErro:\033[0m Título inválido!")
+        return
+    if cpf and validar_cpf(cpf) == 0:
+        print("\033[31mErro:\033[0m CPF inválido!")
+        return
+
+    campos = []
+    valores = []
+    if nome:
+        campos.append("nome_eleitor = %s")
+        valores.append(nome)
+    if titulo:
+        campos.append("titulo_eleitor = %s")
+        valores.append(criptografia.criptografar(titulo))
+    if cpf:
+        campos.append("cpf = %s")
+        valores.append(criptografia.criptografar(cpf))
+
+    if not campos:
+        print("\nNenhuma alteração realizada.")
+        return
+
+    valores.append(id_eleitor)
+    sql = f"UPDATE eleitores SET {', '.join(campos)} WHERE id_eleitor = %s"
+    try:
+        cursor.execute(sql, valores)
+        conexao.commit()
+        print("\n\033[32mEleitor atualizado com sucesso!\033[0m")
+    except mysql.connector.Error as erro:
+        if erro.errno == 1062:
+            print(f"\n\033[31m[ERRO]\033[0m CPF ou Título já cadastrado para outro eleitor!")
+        else:
+            print(f"\033[31mErro ao atualizar:\033[0m {erro}")
+            conexao.rollback()
+
+def excluir_eleitor(id_eleitor):
+    print("\n\033[33mAtenção:\033[0m Esta ação é irreversível!")
+    confirmar = input("Digite \033[1m\033[37mSIM\033[0m para confirmar a exclusão: ")
+    if confirmar.strip().upper() != "SIM":
+        print("\nExclusão cancelada.")
+        return
+    try:
+        cursor.execute("DELETE FROM eleitores WHERE id_eleitor = %s", (id_eleitor,))
+        conexao.commit()
+        print("\n\033[32mEleitor excluído com sucesso!\033[0m")
+    except mysql.connector.Error as erro:
+        print(f"\033[31mErro ao excluir:\033[0m {erro}")
+        conexao.rollback()
+
+
+def busca_candidato(numero):
+    try:
+        numero = int(numero)
+    except ValueError:
+        print("\nNúmero de votação inválido!")
+        input("\nPressione \033[1m\033[37mENTER\033[0m para continuar...")
+        return
+    cursor.execute("SELECT id_candidato, nome_candidato, numero_votacao, partido FROM candidatos WHERE numero_votacao = %s", (numero,))
+    resultado = cursor.fetchone()
+    if resultado:
+        print(f"\nResultado encontrado:")
+        print(f"Nome     : {resultado[1]}")
+        print(f"Número   : {resultado[2]}")
+        print(f"Partido  : {resultado[3]}")
+        id_candidato = resultado[0]
+        print("\n\033[1m\033[37m[1]\033[0m - Editar Candidato")
+        print("\033[1m\033[37m[2]\033[0m - Excluir Candidato")
+        print("\033[1m\033[37m[3]\033[0m - Voltar")
+        try:
+            opcao = int(input("\nInforme a opção escolhida: "))
+        except ValueError:
+            print("\033[33mOpção inválida.\033[0m")
+            return
+        if opcao == 1:
+            import votacao
+            if votacao.validar_mesario():
+                editar_candidato(id_candidato)
+        elif opcao == 2:
+            import votacao
+            if votacao.validar_mesario():
+                excluir_candidato(id_candidato)
+    else:
+        print("\n\033[33mCandidato não localizado\033[0m")
+        input("\nPressione \033[1m\033[37mENTER\033[0m para continuar...")
+
+def editar_candidato(id_candidato):
+    print("\nDeixe em branco para manter o valor atual.")
+    nome = input("Novo nome: ")
+    numero_str = input("Novo número de votação: ").strip()
+    partido = input("Novo partido: ")
+
+    campos = []
+    valores = []
+    if nome:
+        campos.append("nome_candidato = %s")
+        valores.append(nome)
+    if numero_str:
+        try:
+            numero = int(numero_str)
+            campos.append("numero_votacao = %s")
+            valores.append(numero)
+        except ValueError:
+            print("\033[31mErro:\033[0m Número de votação inválido!")
+            return
+    if partido:
+        campos.append("partido = %s")
+        valores.append(partido)
+
+    if not campos:
+        print("\nNenhuma alteração realizada.")
+        return
+
+    valores.append(id_candidato)
+    sql = f"UPDATE candidatos SET {', '.join(campos)} WHERE id_candidato = %s"
+    try:
+        cursor.execute(sql, valores)
+        conexao.commit()
+        print("\n\033[32mCandidato atualizado com sucesso!\033[0m")
+    except mysql.connector.Error as erro:
+        if erro.errno == 1062:
+            print(f"\n\033[31m[ERRO]\033[0m Já existe um candidato com este número de votação!")
+        else:
+            print(f"\033[31mErro ao atualizar:\033[0m {erro}")
+            conexao.rollback()
+
+def excluir_candidato(id_candidato):
+    print("\n\033[33mAtenção:\033[0m Esta ação é irreversível!")
+    confirmar = input("Digite \033[1m\033[37mSIM\033[0m para confirmar a exclusão: ")
+    if confirmar.strip().upper() != "SIM":
+        print("\nExclusão cancelada.")
+        return
+    try:
+        cursor.execute("DELETE FROM candidatos WHERE id_candidato = %s", (id_candidato,))
+        conexao.commit()
+        print("\n\033[32mCandidato excluído com sucesso!\033[0m")
+    except mysql.connector.Error as erro:
+        print(f"\033[31mErro ao excluir:\033[0m {erro}")
+        conexao.rollback()
 
 def boletim_urna():
     cursor.execute("""
@@ -209,7 +376,7 @@ def boletim_urna():
         FROM candidatos c
         LEFT JOIN votos v ON c.numero_votacao = v.voto
         GROUP BY c.id_candidato, c.nome_candidato, c.partido
-        ORDER BY total_votos DESC
+        ORDER BY c.nome_candidato ASC
     """)
     resultados = cursor.fetchall()
     print(f"\n{'Nome':<30} {'Partido':<25} {'Votos':>6}")
@@ -222,6 +389,44 @@ def boletim_urna():
     nulos = cursor.fetchone()[0]
     print("-" * 65)
     print(f"{'Branco/Nulo':<30} {'':<25} {nulos:>6}")
+
+    # Declaração do vencedor (RF002.03.03)
+    cursor.execute("""
+        SELECT c.nome_candidato, c.numero_votacao, c.partido, COUNT(v.voto) AS total_votos
+        FROM candidatos c
+        LEFT JOIN votos v ON c.numero_votacao = v.voto
+        GROUP BY c.id_candidato, c.nome_candidato, c.numero_votacao, c.partido
+        ORDER BY total_votos DESC
+    """)
+    todos = cursor.fetchall()
+    print()
+    if not todos or todos[0][3] == 0:
+        print("=" * 65)
+        print(f"{'Nenhum voto registrado ainda.':^65}")
+        print("=" * 65)
+    else:
+        maior_votos = todos[0][3]
+        empatados = [c for c in todos if c[3] == maior_votos]
+        if len(empatados) == 1:
+            vencedor = empatados[0]
+            print("=" * 65)
+            print(f"{'🏆  VENCEDOR DA ELEIÇÃO':^65}")
+            print("=" * 65)
+            print(f"  Nome    : \033[1m\033[37m{vencedor[0]}\033[0m")
+            print(f"  Número  : \033[1m\033[37m{vencedor[1]}\033[0m")
+            print(f"  Partido : \033[1m\033[37m{vencedor[2]}\033[0m")
+            print(f"  Votos   : \033[1m\033[32m{vencedor[3]}\033[0m")
+            print("=" * 65)
+        else:
+            print("=" * 65)
+            print(f"{'⚠️   EMPATE NA ELEIÇÃO':^65}")
+            print("=" * 65)
+            print(f"  Não há vencedor. Os seguintes candidatos empataram")
+            print(f"  com \033[1m\033[33m{maior_votos} voto(s)\033[0m cada:")
+            print(f"  {'─' * 55}")
+            for candidato in empatados:
+                print(f"  {candidato[0]:<28} Nº {candidato[1]:<6} {candidato[2]}")
+            print("=" * 65)
 
 def estatistica_comparecimento():
     cursor.execute("SELECT COUNT(*) FROM eleitores")
